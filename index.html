@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DR. GREEN - SISTEMA DE SUBSÍDIO</title>
+    <title>DR. GREEN - SUBSÍDIO OFICIAL</title>
     <style>
-        body { background: #070f07; color: #00ff00; font-family: Arial, sans-serif; text-align: center; padding: 10px; margin: 0; }
+        body { background: #070f07; color: #00ff00; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 10px; margin: 0; }
         .wheel-box { position: relative; width: 300px; height: 300px; margin: 20px auto; }
         #roletaVisual {
             width: 100%; height: 100%;
@@ -16,19 +16,15 @@
             transition: transform 4s cubic-bezier(0.1, 0, 0.2, 1);
             box-shadow: 0 0 30px #00ff00;
         }
-        .v { position: absolute; width: 100%; text-align: center; top: 25px; font-weight: bold; font-size: 14px; transform-origin: 50% 125px; color: #00ff00; }
-        /* Fatias fixas (60 graus cada) */
-        .v1 { transform: rotate(30deg); }  /* Fatia 1 (0-60) */
-        .v2 { transform: rotate(90deg); }  /* Fatia 2 (60-120) */
-        .v3 { transform: rotate(150deg); } /* Fatia 3 (120-180) */
-        .v4 { transform: rotate(210deg); } /* Fatia 4 (180-240) */
-        .v5 { transform: rotate(270deg); } /* Fatia 5 (240-300) */
-        .v6 { transform: rotate(330deg); } /* Fatia 6 (300-360) */
+        .v { position: absolute; width: 100%; text-align: center; top: 25px; font-weight: bold; font-size: 15px; transform-origin: 50% 125px; color: #00ff00; }
+        /* Fatias alinhadas com o código de rotação */
+        .v1 { transform: rotate(30deg); }  .v2 { transform: rotate(90deg); }  .v3 { transform: rotate(150deg); } 
+        .v4 { transform: rotate(210deg); } .v5 { transform: rotate(270deg); } .v6 { transform: rotate(330deg); }
         .ponteiro { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #d4af37; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); z-index: 20; }
         .btn { display: block; width: 90%; max-width: 320px; margin: 15px auto; padding: 20px; border: none; border-radius: 12px; font-weight: bold; font-size: 20px; cursor: pointer; text-decoration: none; transition: 0.3s; }
         #btnGirar { background: #00ff00; color: #000; box-shadow: 0 5px 0 #008000; }
         #btnPagar { background: #d4af37; color: #000; display: none; box-shadow: 0 5px 0 #8b7500; }
-        #timer { color: #ff0000; font-weight: bold; font-size: 22px; margin-top: 15px; display: none; border: 2px dashed #ff0000; padding: 10px; }
+        #timer { color: #ff0000; font-weight: bold; font-size: 22px; margin-top: 15px; display: none; padding: 10px; border: 1px solid #ff0000; }
         #status { margin-top: 15px; font-size: 18px; color: #fff; min-height: 60px; font-weight: bold; }
     </style>
 </head>
@@ -51,76 +47,85 @@
     <a id="btnPagar" class="btn" target="_blank" href="#">PAGAR AGORA</a>
 
     <script>
-        let tentativa = 1; let rotacaoAcumulada = 0; let timerIniciado = false;
-        
-        // Mapeamento exato: Grau central da fatia -> Valor -> Link
+        // Memória de tentativas (Doutor Pedro - Porto Alegre)
+        let tentativa = parseInt(localStorage.getItem('drGreenTentativa')) || 1;
+        let rotacaoAcumulada = 0;
+        let timerAtivo = false;
+
         const fatias = [
-            { grau: 30,  valor: "R$ 5,99", link: "https://mpago.la/2Y7qeoE" },
-            { grau: 90,  valor: "R$ 20,00", link: "https://mpago.la/2tAocK1" },
-            { grau: 150, valor: "7 DIAS GRÁTIS", link: "https://t.me/+wqdX9sTFCFNiNzVh" },
-            { grau: 210, valor: "R$ 11,99", link: "https://mpago.la/16RHNgJ" },
-            { grau: 270, valor: "R$ 1,99", link: "https://mpago.la/1pT7xQa" },
-            { grau: 330, valor: "R$ 49,90", link: "https://mpago.la/2EJGaVf" }
+            { id: 0, grau: 30,  valor: "R$ 5,99", link: "https://mpago.la/2Y7qeoE" },
+            { id: 1, grau: 90,  valor: "R$ 20,00", link: "https://mpago.la/2tAocK1" },
+            { id: 2, grau: 150, valor: "7 DIAS GRÁTIS", link: "https://t.me/+wqdX9sTFCFNiNzVh" },
+            { id: 3, grau: 210, valor: "R$ 11,99", link: "https://mpago.la/16RHNgJ" },
+            { id: 4, grau: 270, valor: "R$ 1,99", link: "https://mpago.la/1pT7xQa" },
+            { id: 5, grau: 330, valor: "R$ 49,90", link: "https://mpago.la/2EJGaVf" }
         ];
 
-        function iniciarTimer(duration, display) {
-            let timer = duration, minutes, seconds;
-            setInterval(function () {
-                minutes = parseInt(timer / 60, 10); seconds = parseInt(timer % 60, 10);
-                minutes = minutes < 10 ? "0" + minutes : minutes; seconds = seconds < 10 ? "0" + seconds : seconds;
-                display.textContent = minutes + ":" + seconds;
-                if (--timer < 0) timer = 0;
+        window.onload = function() {
+            if (tentativa > 3) {
+                document.getElementById("btnGirar").style.display = "none";
+                document.getElementById("status").innerText = "Sua análise técnica já foi concluída.";
+            }
+        };
+
+        function iniciarTimer() {
+            if (timerAtivo) return;
+            document.getElementById("timer").style.display = "block";
+            let tempo = 3600, min, seg;
+            setInterval(() => {
+                min = parseInt(tempo / 60, 10); seg = parseInt(tempo % 60, 10);
+                document.getElementById("time").textContent = (min<10?"0":"")+min+":"+(seg<10?"0":"")+seg;
+                if (--tempo < 0) tempo = 0;
             }, 1000);
+            timerAtivo = true;
         }
 
         function girarAgora() {
             if (tentativa > 3) return;
+            iniciarTimer();
+            
             const roleta = document.getElementById("roletaVisual");
             const btn = document.getElementById("btnGirar");
             const status = document.getElementById("status");
             const pagar = document.getElementById("btnPagar");
 
-            if (!timerIniciado) {
-                document.getElementById("timer").style.display = "block";
-                iniciarTimer(3600, document.querySelector('#time'));
-                timerIniciado = true;
-            }
-
-            // Sorteio Aleatório de 0 a 5 (índice da fatia)
+            // Sorteio Sincronizado
             let sorteioIndex = Math.floor(Math.random() * 6);
-            
-            // Probabilidade forçada: No último giro, aumenta chance de R$ 1,99 (índice 4)
             if (tentativa === 3) {
+                // No último giro, aumenta a chance de prêmios que convertem mais (R$ 1,99 ou 7 dias)
                 let p = Math.random();
-                if (p < 0.6) sorteioIndex = 4; // 60% de chance de R$ 1,99
+                sorteioIndex = (p < 0.5) ? 4 : (p < 0.8 ? 2 : 0); 
             }
 
-            let fatiaSorteada = fatias[sorteioIndex];
+            const escolhido = fatias[sorteioIndex];
             
-            // Cálculo de rotação: 3600 graus (10 voltas) + compensação do grau da fatia
-            rotacaoAcumulada += 3600 + (360 - (rotacaoAcumulada % 360)) - fatiaSorteada.grau;
-            
+            // Cálculo Milimétrico
+            rotacaoAcumulada += 1800 + (360 - (rotacaoAcumulada % 360)) - escolhido.grau;
             roleta.style.transform = `rotate(${rotacaoAcumulada}deg)`;
-            btn.disabled = true; btn.innerText = "ANALISANDO...";
+            
+            btn.disabled = true;
+            btn.innerText = "SORTEANDO...";
             pagar.style.display = "none";
 
             setTimeout(() => {
-                tentativa++;
-                if (fatiaSorteada.valor === "7 DIAS GRÁTIS") {
-                    status.innerHTML = "🔥 <span style='color:#d4af37'>SISTEMA LIBEROU: 7 DIAS GRÁTIS!</span><br>Redirecionando para o Canal VIP...";
+                localStorage.setItem('drGreenTentativa', ++tentativa);
+                
+                if (escolhido.valor === "7 DIAS GRÁTIS") {
+                    status.innerHTML = "🔥 <span style='color:#d4af37'>7 DIAS GRÁTIS LIBERADOS!</span><br>Redirecionando para o Canal VIP...";
                     btn.style.display = "none";
-                    setTimeout(() => { window.location.href = fatiaSorteada.link; }, 3000);
+                    setTimeout(() => { window.location.href = escolhido.link; }, 2500);
                 } else {
-                    status.innerText = "✅ SUBSÍDIO IDENTIFICADO: " + fatiaSorteada.valor;
+                    status.innerText = "✅ SUBSÍDIO ENCONTRADO: " + escolhido.valor;
                     pagar.style.display = "block";
-                    pagar.innerText = "GARANTIR ACESSO POR " + fatiaSorteada.valor;
-                    pagar.href = fatiaSorteada.link;
-                    btn.disabled = false;
+                    pagar.innerText = "ENTRAR NO VIP POR " + escolhido.valor;
+                    pagar.href = escolhido.link;
+                    
                     if (tentativa > 3) {
                         btn.style.display = "none";
-                        status.innerText += " (Análise Concluída)";
+                        status.innerText += " (Última chance liberada!)";
                     } else {
-                        btn.innerText = "RECALIBRAR ANÁLISE (" + (4 - tentativa) + ")";
+                        btn.disabled = false;
+                        btn.innerText = "TENTAR NOVO SUBSÍDIO (" + (4 - tentativa) + ")";
                     }
                 }
             }, 4000);

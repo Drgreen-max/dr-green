@@ -17,8 +17,13 @@
             box-shadow: 0 0 30px #00ff00;
         }
         .v { position: absolute; width: 100%; text-align: center; top: 25px; font-weight: bold; font-size: 14px; transform-origin: 50% 125px; color: #00ff00; }
-        .v1 { transform: rotate(30deg); } .v2 { transform: rotate(90deg); } .v3 { transform: rotate(150deg); } 
-        .v4 { transform: rotate(210deg); } .v5 { transform: rotate(270deg); } .v6 { transform: rotate(330deg); }
+        /* Fatias fixas (60 graus cada) */
+        .v1 { transform: rotate(30deg); }  /* Fatia 1 (0-60) */
+        .v2 { transform: rotate(90deg); }  /* Fatia 2 (60-120) */
+        .v3 { transform: rotate(150deg); } /* Fatia 3 (120-180) */
+        .v4 { transform: rotate(210deg); } /* Fatia 4 (180-240) */
+        .v5 { transform: rotate(270deg); } /* Fatia 5 (240-300) */
+        .v6 { transform: rotate(330deg); } /* Fatia 6 (300-360) */
         .ponteiro { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #d4af37; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); z-index: 20; }
         .btn { display: block; width: 90%; max-width: 320px; margin: 15px auto; padding: 20px; border: none; border-radius: 12px; font-weight: bold; font-size: 20px; cursor: pointer; text-decoration: none; transition: 0.3s; }
         #btnGirar { background: #00ff00; color: #000; box-shadow: 0 5px 0 #008000; }
@@ -32,26 +37,31 @@
     <div class="wheel-box">
         <div class="ponteiro"></div>
         <div id="roletaVisual">
-            <div class="v v1">R$ 49,90</div><div class="v v2">R$ 11,99</div><div class="v v3">R$ 1,99</div>
-            <div class="v v4">R$ 20,00</div><div class="v v5">R$ 5,99</div><div class="v v6">7 DIAS GRÁTIS</div>
+            <div class="v v1">R$ 5,99</div>
+            <div class="v v2">R$ 20,00</div>
+            <div class="v v3">7 DIAS GRÁTIS</div>
+            <div class="v v4">R$ 11,99</div>
+            <div class="v v5">R$ 1,99</div>
+            <div class="v v6">R$ 49,90</div>
         </div>
     </div>
     <div id="status">Inicie a análise para liberar o acesso VIP.</div>
     <div id="timer">OFERTA EXPIRA EM: <span id="time">60:00</span></div>
     <button id="btnGirar" class="btn" onclick="girarAgora()">GIRAR ROLETA</button>
-    <a id="btnPagar" class="btn" target="_blank" href="#">ENTRAR NO CANAL AGORA</a>
+    <a id="btnPagar" class="btn" target="_blank" href="#">PAGAR AGORA</a>
 
     <script>
         let tentativa = 1; let rotacaoAcumulada = 0; let timerIniciado = false;
         
-        const linksPagamento = {
-            "R$ 1,99": "https://mpago.la/1pT7xQa",
-            "R$ 5,99": "https://mpago.la/2Y7qeoE",
-            "R$ 11,99": "https://mpago.la/16RHNgJ",
-            "R$ 20,00": "https://mpago.la/2tAocK1",
-            "R$ 49,90": "https://mpago.la/2EJGaVf",
-            "7 DIAS GRÁTIS": "https://t.me/+wqdX9sTFCFNiNzVh" 
-        };
+        // Mapeamento exato: Grau central da fatia -> Valor -> Link
+        const fatias = [
+            { grau: 30,  valor: "R$ 5,99", link: "https://mpago.la/2Y7qeoE" },
+            { grau: 90,  valor: "R$ 20,00", link: "https://mpago.la/2tAocK1" },
+            { grau: 150, valor: "7 DIAS GRÁTIS", link: "https://t.me/+wqdX9sTFCFNiNzVh" },
+            { grau: 210, valor: "R$ 11,99", link: "https://mpago.la/16RHNgJ" },
+            { grau: 270, valor: "R$ 1,99", link: "https://mpago.la/1pT7xQa" },
+            { grau: 330, valor: "R$ 49,90", link: "https://mpago.la/2EJGaVf" }
+        ];
 
         function iniciarTimer(duration, display) {
             let timer = duration, minutes, seconds;
@@ -69,42 +79,49 @@
             const btn = document.getElementById("btnGirar");
             const status = document.getElementById("status");
             const pagar = document.getElementById("btnPagar");
-            const timerDiv = document.getElementById("timer");
 
             if (!timerIniciado) {
-                timerDiv.style.display = "block";
+                document.getElementById("timer").style.display = "block";
                 iniciarTimer(3600, document.querySelector('#time'));
                 timerIniciado = true;
             }
 
-            let sorteio = Math.random() * 100;
-            let grausPremio = 0; let valorResult = "";
-
-            if (tentativa === 1) { grausPremio = 330; valorResult = "R$ 49,90"; tentativa = 2; }
-            else if (tentativa === 2) { grausPremio = 210; valorResult = "R$ 20,00"; tentativa = 3; }
-            else {
-                if (sorteio < 50) { grausPremio = 150; valorResult = "R$ 1,99"; }
-                else { grausPremio = 270; valorResult = "7 DIAS GRÁTIS"; }
-                tentativa = 4;
+            // Sorteio Aleatório de 0 a 5 (índice da fatia)
+            let sorteioIndex = Math.floor(Math.random() * 6);
+            
+            // Probabilidade forçada: No último giro, aumenta chance de R$ 1,99 (índice 4)
+            if (tentativa === 3) {
+                let p = Math.random();
+                if (p < 0.6) sorteioIndex = 4; // 60% de chance de R$ 1,99
             }
 
-            rotacaoAcumulada += 1800 + (360 - (rotacaoAcumulada % 360)) - grausPremio;
+            let fatiaSorteada = fatias[sorteioIndex];
+            
+            // Cálculo de rotação: 3600 graus (10 voltas) + compensação do grau da fatia
+            rotacaoAcumulada += 3600 + (360 - (rotacaoAcumulada % 360)) - fatiaSorteada.grau;
+            
             roleta.style.transform = `rotate(${rotacaoAcumulada}deg)`;
-            btn.disabled = true; btn.innerText = "SORTEANDO...";
+            btn.disabled = true; btn.innerText = "ANALISANDO...";
+            pagar.style.display = "none";
 
             setTimeout(() => {
-                if (valorResult === "7 DIAS GRÁTIS") {
+                tentativa++;
+                if (fatiaSorteada.valor === "7 DIAS GRÁTIS") {
                     status.innerHTML = "🔥 <span style='color:#d4af37'>SISTEMA LIBEROU: 7 DIAS GRÁTIS!</span><br>Redirecionando para o Canal VIP...";
                     btn.style.display = "none";
-                    setTimeout(() => { window.location.href = linksPagamento["7 DIAS GRÁTIS"]; }, 3000);
+                    setTimeout(() => { window.location.href = fatiaSorteada.link; }, 3000);
                 } else {
-                    status.innerText = "✅ SUBSÍDIO IDENTIFICADO: " + valorResult;
+                    status.innerText = "✅ SUBSÍDIO IDENTIFICADO: " + fatiaSorteada.valor;
                     pagar.style.display = "block";
-                    pagar.innerText = "ENTRAR NO VIP POR " + valorResult;
-                    pagar.href = linksPagamento[valorResult];
+                    pagar.innerText = "GARANTIR ACESSO POR " + fatiaSorteada.valor;
+                    pagar.href = fatiaSorteada.link;
                     btn.disabled = false;
-                    if (tentativa > 3) btn.style.display = "none";
-                    else btn.innerText = "RECALIBRAR ANÁLISE";
+                    if (tentativa > 3) {
+                        btn.style.display = "none";
+                        status.innerText += " (Análise Concluída)";
+                    } else {
+                        btn.innerText = "RECALIBRAR ANÁLISE (" + (4 - tentativa) + ")";
+                    }
                 }
             }, 4000);
         }

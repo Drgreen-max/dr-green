@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DR. GREEN - SISTEMA DE SUBSÍDIO</title>
     <style>
-        body { background: #070f07; color: #00ff00; font-family: Arial; text-align: center; padding: 10px; margin: 0; }
-        .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px auto; }
+        body { background: #070f07; color: #00ff00; font-family: Arial, sans-serif; text-align: center; padding: 10px; margin: 0; }
+        .wheel-box { position: relative; width: 300px; height: 300px; margin: 20px auto; }
         #roletaVisual {
             width: 100%; height: 100%;
             border: 8px solid #d4af37;
@@ -14,21 +14,21 @@
             background: conic-gradient(#000 0deg 60deg, #051a05 60deg 120deg, #000 120deg 180deg, #051a05 180deg 240deg, #000 240deg 300deg, #051a05 300deg 360deg);
             position: relative;
             transition: transform 4s cubic-bezier(0.1, 0, 0.2, 1);
-            box-shadow: 0 0 25px #00ff00;
+            box-shadow: 0 0 30px #00ff00;
         }
-        .v { position: absolute; width: 100%; text-align: center; top: 20px; font-weight: bold; font-size: 16px; transform-origin: 50% 120px; color: #00ff00; }
-        .v1 { transform: rotate(0deg); } .v2 { transform: rotate(60deg); } .v3 { transform: rotate(120deg); } 
-        .v4 { transform: rotate(180deg); } .v5 { transform: rotate(240deg); } .v6 { transform: rotate(300deg); }
-        .ponteiro { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #d4af37; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 20; }
-        .btn { display: block; width: 90%; max-width: 300px; margin: 10px auto; padding: 18px; border: none; border-radius: 10px; font-weight: bold; font-size: 18px; cursor: pointer; text-decoration: none; }
-        #btnGirar { background: #00ff00; color: #000; }
-        #btnPagar { background: #d4af37; color: #000; display: none; }
-        #timer { color: #ff0000; font-weight: bold; font-size: 20px; margin-top: 10px; display: none; }
-        #status { margin-top: 10px; font-size: 16px; color: #fff; min-height: 50px; }
+        .v { position: absolute; width: 100%; text-align: center; top: 25px; font-weight: bold; font-size: 14px; transform-origin: 50% 125px; color: #00ff00; }
+        .v1 { transform: rotate(30deg); } .v2 { transform: rotate(90deg); } .v3 { transform: rotate(150deg); } 
+        .v4 { transform: rotate(210deg); } .v5 { transform: rotate(270deg); } .v6 { transform: rotate(330deg); }
+        .ponteiro { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #d4af37; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); z-index: 20; }
+        .btn { display: block; width: 90%; max-width: 320px; margin: 15px auto; padding: 20px; border: none; border-radius: 12px; font-weight: bold; font-size: 20px; cursor: pointer; text-decoration: none; transition: 0.3s; }
+        #btnGirar { background: #00ff00; color: #000; box-shadow: 0 5px 0 #008000; }
+        #btnPagar { background: #d4af37; color: #000; display: none; box-shadow: 0 5px 0 #8b7500; }
+        #timer { color: #ff0000; font-weight: bold; font-size: 22px; margin-top: 15px; display: none; border: 2px dashed #ff0000; padding: 10px; }
+        #status { margin-top: 15px; font-size: 18px; color: #fff; min-height: 60px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h2 style="color:#d4af37">DR. GREEN - VIP</h2>
+    <h2 style="color:#d4af37; margin-bottom: 5px;">DR. GREEN - VIP</h2>
     <div class="wheel-box">
         <div class="ponteiro"></div>
         <div id="roletaVisual">
@@ -36,21 +36,21 @@
             <div class="v v4">R$ 20,00</div><div class="v v5">R$ 5,99</div><div class="v v6">7 DIAS GRÁTIS</div>
         </div>
     </div>
-    <div id="status">Inicie a análise para liberar o subsídio.</div>
+    <div id="status">Inicie a análise para liberar o acesso VIP.</div>
     <div id="timer">OFERTA EXPIRA EM: <span id="time">60:00</span></div>
     <button id="btnGirar" class="btn" onclick="girarAgora()">GIRAR ROLETA</button>
-    <a id="btnPagar" class="btn" href="#">PAGAR AGORA</a>
+    <a id="btnPagar" class="btn" target="_blank" href="#">ENTRAR NO CANAL AGORA</a>
 
     <script>
         let tentativa = 1; let rotacaoAcumulada = 0; let timerIniciado = false;
+        
         const linksPagamento = {
             "R$ 1,99": "https://mpago.la/1pT7xQa",
             "R$ 5,99": "https://mpago.la/2Y7qeoE",
-            "R$ 9,90": "https://mpago.la/2EeiyCx",
             "R$ 11,99": "https://mpago.la/16RHNgJ",
             "R$ 20,00": "https://mpago.la/2tAocK1",
             "R$ 49,90": "https://mpago.la/2EJGaVf",
-            "7 DIAS GRÁTIS": "https://mpago.la/2EJGaVf"
+            "7 DIAS GRÁTIS": "https://t.me/+wqdX9sTFCFNiNzVh" 
         };
 
         function iniciarTimer(duration, display) {
@@ -80,47 +80,34 @@
             let sorteio = Math.random() * 100;
             let grausPremio = 0; let valorResult = "";
 
-            if (tentativa === 1) {
-                if (sorteio < 30) { grausPremio = 0; valorResult = "R$ 49,90"; }
-                else if (sorteio < 70) { grausPremio = 180; valorResult = "R$ 20,00"; }
-                else { grausPremio = 60; valorResult = "R$ 11,99"; }
-                tentativa = 2;
-            } else if (tentativa === 2) {
-                if (sorteio < 40) { grausPremio = 240; valorResult = "R$ 5,99"; }
-                else if (sorteio < 60) { grausPremio = 0; valorResult = "R$ 9,90"; } 
-                else if (sorteio < 70) { grausPremio = 120; valorResult = "R$ 1,99"; }
-                else { grausPremio = 60; valorResult = "R$ 11,99"; }
-                tentativa = 3;
-            } else {
-                if (sorteio < 40) { grausPremio = 120; valorResult = "R$ 1,99"; }
-                else if (sorteio < 60) { grausPremio = 240; valorResult = "R$ 5,99"; }
-                else if (sorteio < 90) { grausPremio = 300; valorResult = "7 DIAS GRÁTIS"; }
-                else { grausPremio = 0; valorResult = "R$ 49,90"; }
-                if (valorResult !== "7 DIAS GRÁTIS") tentativa = 4;
+            if (tentativa === 1) { grausPremio = 330; valorResult = "R$ 49,90"; tentativa = 2; }
+            else if (tentativa === 2) { grausPremio = 210; valorResult = "R$ 20,00"; tentativa = 3; }
+            else {
+                if (sorteio < 50) { grausPremio = 150; valorResult = "R$ 1,99"; }
+                else { grausPremio = 270; valorResult = "7 DIAS GRÁTIS"; }
+                tentativa = 4;
             }
 
             rotacaoAcumulada += 1800 + (360 - (rotacaoAcumulada % 360)) - grausPremio;
             roleta.style.transform = `rotate(${rotacaoAcumulada}deg)`;
-            btn.disabled = true;
-            btn.innerText = "SORTEANDO...";
+            btn.disabled = true; btn.innerText = "SORTEANDO...";
 
             setTimeout(() => {
                 if (valorResult === "7 DIAS GRÁTIS") {
-                    status.innerHTML = "🔥 <b>SISTEMA LIBEROU: 7 DIAS GRÁTIS!</b><br>Redirecionando...";
+                    status.innerHTML = "🔥 <span style='color:#d4af37'>SISTEMA LIBEROU: 7 DIAS GRÁTIS!</span><br>Redirecionando para o Canal VIP...";
                     btn.style.display = "none";
                     setTimeout(() => { window.location.href = linksPagamento["7 DIAS GRÁTIS"]; }, 3000);
                 } else {
-                    status.innerText = "✅ VALOR IDENTIFICADO: " + valorResult;
+                    status.innerText = "✅ SUBSÍDIO IDENTIFICADO: " + valorResult;
                     pagar.style.display = "block";
-                    pagar.innerText = "PAGAR " + valorResult + " AGORA";
+                    pagar.innerText = "ENTRAR NO VIP POR " + valorResult;
                     pagar.href = linksPagamento[valorResult];
                     btn.disabled = false;
                     if (tentativa > 3) btn.style.display = "none";
-                    else btn.innerText = "TENTAR NOVO GIRO";
+                    else btn.innerText = "RECALIBRAR ANÁLISE";
                 }
             }, 4000);
         }
     </script>
 </body>
 </html>
-
